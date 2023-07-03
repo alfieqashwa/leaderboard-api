@@ -4,13 +4,13 @@ import * as argon from "argon2"
 import { PrismaService } from "src/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) { }
   async signup(dto: AuthDto) {
     try {
-
       const hash = await argon.hash(dto.password)
 
       const user = await this.prisma.user.create({
@@ -23,33 +23,34 @@ export class AuthService {
       return this.signToken(user.id, user.email)
 
     } catch (err) {
-      //TODO: not much time
-      //? error code: 'P2002' in terminal,
-      console.error(err);
-
+      if (
+        err instanceof PrismaClientKnownRequestError
+      ) {
+        if (err.code === "P2002") {
+          throw new ForbiddenException(
+            'Credentials taken'
+          )
+        }
+      }
+      throw err
     }
   }
   async signin(dto: AuthDto) {
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { email: dto.email }
-      })
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email }
+    })
 
-      if (!user) throw new ForbiddenException('Credentialls incorrect')
+    if (!user) throw new ForbiddenException('Credentials incorrect')
 
-      //* compare passwd
-      const isPasswdMatch = await argon.verify(
-        user.hash,
-        dto.password
-      )
+    //* compare passwd
+    const isPasswdMatch = await argon.verify(
+      user.hash,
+      dto.password
+    )
 
-      if (!isPasswdMatch) throw new ForbiddenException("Credentials is incorrect")
+    if (!isPasswdMatch) throw new ForbiddenException("Credentials is incorrect")
 
-      return this.signToken(user.id, user.email)
-
-    } catch (err) {
-      console.error(err);
-    }
+    return this.signToken(user.id, user.email)
   }
 
   async signToken(userId: number, email: string): Promise<{ access_token: string }> {
