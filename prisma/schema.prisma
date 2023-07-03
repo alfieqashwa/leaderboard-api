@@ -19,7 +19,7 @@ model User {
   hash    String
   name    String?
   score   Int     @default(0)
-  isAdmin Boolean @default(false)
+  isAdmin Boolean @default(false) @map("is_admin")
 
   leaderboardId Int?         @map("leaderboard_id")
   leaderboard   Leaderboard? @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
