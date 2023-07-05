@@ -15,9 +15,8 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
 
-  email   String  @unique
+  name    String  @unique
   hash    String
-  name    String?
   score   Int     @default(0)
   isAdmin Boolean @default(false) @map("is_admin")
 

@@ -13,7 +13,6 @@ export class LeaderboardService {
           id: true,
           createdAt: true,
           updatedAt: true,
-          email: true,
           name: true,
           score: true,
           isAdmin: true,

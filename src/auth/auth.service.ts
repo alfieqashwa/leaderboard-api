@@ -15,12 +15,12 @@ export class AuthService {
 
       const user = await this.prisma.user.create({
         data: {
-          email: dto.email,
+          name: dto.name,
           hash
         }
       })
 
-      return this.signToken(user.id, user.email)
+      return this.signToken(user.id, user.name)
 
     } catch (err) {
       if (
@@ -37,7 +37,7 @@ export class AuthService {
   }
   async signin(dto: AuthDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email }
+      where: { name: dto.name }
     })
 
     if (!user) throw new ForbiddenException('Credentials incorrect')
@@ -50,14 +50,14 @@ export class AuthService {
 
     if (!isPasswdMatch) throw new ForbiddenException("Credentials is incorrect")
 
-    return this.signToken(user.id, user.email)
+    return this.signToken(user.id, user.name)
   }
 
-  async signToken(userId: number, email: string): Promise<{ access_token: string }> {
+  async signToken(userId: number, name: string): Promise<{ access_token: string }> {
 
     const payload = {
       sub: userId,
-      email
+      name
     }
     const secret = this.config.get("JWT_SECRET")
 
