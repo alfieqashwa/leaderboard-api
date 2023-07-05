@@ -10,12 +10,8 @@ export class LeaderboardService {
 
       return await this.prisma.user.findMany({
         select: {
-          id: true,
-          createdAt: true,
-          updatedAt: true,
           name: true,
           score: true,
-          isAdmin: true,
         },
         orderBy: { score: "desc" }
       })
